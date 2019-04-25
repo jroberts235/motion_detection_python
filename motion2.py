@@ -2,10 +2,7 @@
 
 '''This is a video motion detector.
 
-This uses about 5% CPU running with continuous motion detection on
-a i5-3320M 2.6GHz with 16 GB RAM under no other load.
-
-AUTHOR
+ORIGINAL AUTHOR
 
     Noah Spurrier <noah@noah.org>
 
@@ -26,15 +23,12 @@ LICENSE
     ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-VERSION
-
-    Version 2
 '''
 
 import cv2
 import sys
 import time
-import numpy as np
+#import numpy as np
 
 # The two main parameters that affect movement detection sensitivity
 # are BLUR_SIZE and NOISE_CUTOFF. Both have little direct effect on
@@ -73,10 +67,10 @@ def crop(r, im):
     return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
 # Convert to GreyScale and apply Gausian Blur
-def transform(frame):
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    frame = cv2.blur(frame, (BLUR_SIZE, BLUR_SIZE))
-    return frame
+def transform(im):
+    im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
+    im = cv2.blur(im, (BLUR_SIZE, BLUR_SIZE))
+    return im
 
 # Stabilize the detector by letting the camera warm up and
 # seeding the first frames.
