@@ -53,12 +53,15 @@ NOISE_CUTOFF = 30
 FRAMES_PER_SECOND = 10
 
 cam = cv2.VideoCapture(0)
-# 320*240 = 76800 pixels
+## 320*240 = 76800 pixels
 #cam.set(3, 320)
 #cam.set(4, 240)
-# 640*480 = 307200 pixels
-cam.set(3,640)
-cam.set(4,480)
+## 640*480 = 307200 pixels
+#cam.set(3,640)
+#cam.set(4,480)
+## 1024*768 = HD
+cam.set(3,1024)
+cam.set(4,768)
 
 window_name = "delta view"
 cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
@@ -69,21 +72,23 @@ cv2.namedWindow(window_name_now, cv2.WINDOW_AUTOSIZE)
 def crop(r, im):
     return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
+# Convert to GreyScale and apply Gausian Blur
 def transform(frame):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
     frame = cv2.blur(frame, (BLUR_SIZE, BLUR_SIZE))
     return frame
 
-# ROI settings
-showCrosshair = False
-fromCenter = False
- 
 # Stabilize the detector by letting the camera warm up and
 # seeding the first frames.
 
 frame_now = cam.read()[1]
 frame_now = cam.read()[1]
+
+# Select ROI
+showCrosshair = False
+fromCenter = False
 r = cv2.selectROI("now view", frame_now, fromCenter, showCrosshair)
+
 frame_now = transform(frame_now)
 frame_prior = frame_now
 
@@ -98,8 +103,11 @@ while True:
     # Mirror view makes self display more intuitive.
     cv2.normalize(frame_delta, frame_delta, 0, 255, cv2.NORM_MINMAX)
     frame_delta = cv2.flip(frame_delta, 1)
-    cv2.putText(frame_delta, "DELTA: %d" % (delta_count),
-            (5, 15), cv2.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255))
+
+    # OSD of Delta
+    #cv2.putText(frame_delta, "DELTA: %d" % (delta_count),
+    #        (5, 15), cv2.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255))
+
     cv2.imshow(window_name, frame_delta)
 
     #frame_delta = cv2.threshold(frame_delta, 92, 255, 0)[1]
@@ -128,13 +136,5 @@ while True:
     if key == 0x1b or key == ord('q'):
         cv2.destroyWindow(window_name)
         break
-
-#    # Morphology noise filters. They work, but really don't help much.
-#    # A simple noise cutoff and blur is good enough.
-#kernel = numpy.ones((5,5), numpy.uint8)
-#    cv2.morphologyEx(frame_delta, cv2.MORPH_OPEN, kernel)
-#    cv2.morphologyEx(frame_delta, cv2.MORPH_CLOSE, kernel)
-#    # A bilateral filter also seems pointless.
-#    #frame_now = cv2.bilateralFilter(frame_now,9,75,75)
 
 # vim: set ft=python fileencoding=utf-8 sr et ts=4 sw=4 : See help 'modeline'
