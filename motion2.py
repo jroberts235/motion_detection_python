@@ -36,10 +36,6 @@ import sys
 import time
 import numpy as np
 
-# calculat ROI
-def crop(r, im):
-    return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
-
 # The two main parameters that affect movement detection sensitivity
 # are BLUR_SIZE and NOISE_CUTOFF. Both have little direct effect on
 # CPU usage. In theory a smaller BLUR_SIZE should use less CPU, but
@@ -69,6 +65,15 @@ cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
 window_name_now = "now view"
 cv2.namedWindow(window_name_now, cv2.WINDOW_AUTOSIZE)
 
+# calculat ROI
+def crop(r, im):
+    return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+
+def transform(frame):
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    frame = cv2.blur(frame, (BLUR_SIZE, BLUR_SIZE))
+    return frame
+
 # ROI settings
 showCrosshair = False
 fromCenter = False
@@ -79,8 +84,7 @@ fromCenter = False
 frame_now = cam.read()[1]
 frame_now = cam.read()[1]
 r = cv2.selectROI("now view", frame_now, fromCenter, showCrosshair)
-frame_now = cv2.cvtColor(frame_now, cv2.COLOR_RGB2GRAY)
-frame_now = cv2.blur(frame_now, (BLUR_SIZE, BLUR_SIZE))
+frame_now = transform(frame_now)
 frame_prior = frame_now
 
 delta_count_last = 1
@@ -117,8 +121,8 @@ while True:
     # Advance the frames.
     frame_prior = frame_now
     frame_now = cam.read()[1]
-    frame_now = cv2.cvtColor(frame_now, cv2.COLOR_RGB2GRAY)
-    frame_now = cv2.blur(frame_now, (BLUR_SIZE, BLUR_SIZE))
+    frame_now = transform(frame_now)
+
     # Wait up to 10ms for a key press. Quit if the key is either ESC or 'q'.
     key = cv2.waitKey(10)
     if key == 0x1b or key == ord('q'):
