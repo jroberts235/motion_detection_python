@@ -36,6 +36,10 @@ import sys
 import time
 import numpy as np
 
+# calculat ROI
+def crop(r, im):
+    return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
+
 # The two main parameters that affect movement detection sensitivity
 # are BLUR_SIZE and NOISE_CUTOFF. Both have little direct effect on
 # CPU usage. In theory a smaller BLUR_SIZE should use less CPU, but
@@ -65,25 +69,23 @@ cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
 window_name_now = "now view"
 cv2.namedWindow(window_name_now, cv2.WINDOW_AUTOSIZE)
 
+# ROI settings
+showCrosshair = False
+fromCenter = False
+ 
 # Stabilize the detector by letting the camera warm up and
 # seeding the first frames.
-import cv2
-import numpy as np
- 
-def crop(r, im):
-    return im[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
 frame_now = cam.read()[1]
 frame_now = cam.read()[1]
-r = cv2.selectROI(frame_now)
-frame_now = crop(r, frame_now)
+r = cv2.selectROI("now view", frame_now, fromCenter, showCrosshair)
 frame_now = cv2.cvtColor(frame_now, cv2.COLOR_RGB2GRAY)
 frame_now = cv2.blur(frame_now, (BLUR_SIZE, BLUR_SIZE))
 frame_prior = frame_now
 
 delta_count_last = 1
 while True:
-    frame_delta = cv2.absdiff(frame_prior, frame_now)
+    frame_delta = cv2.absdiff(crop(r, frame_prior), crop(r, frame_now))
     frame_delta = cv2.threshold(frame_delta, NOISE_CUTOFF, 255, 3)[1]
     delta_count = cv2.countNonZero(frame_delta)
 
@@ -97,7 +99,7 @@ while True:
     cv2.imshow(window_name, frame_delta)
 
     #frame_delta = cv2.threshold(frame_delta, 92, 255, 0)[1]
-    dst = cv2.flip(frame_now, 1)
+    dst = cv2.flip(crop(r, frame_now), 1)
     dst = cv2.addWeighted(dst,1.0, frame_delta,0.9,0)
     cv2.imshow(window_name_now, dst)
 
@@ -115,7 +117,6 @@ while True:
     # Advance the frames.
     frame_prior = frame_now
     frame_now = cam.read()[1]
-    frame_now = crop(r, frame_now)
     frame_now = cv2.cvtColor(frame_now, cv2.COLOR_RGB2GRAY)
     frame_now = cv2.blur(frame_now, (BLUR_SIZE, BLUR_SIZE))
     # Wait up to 10ms for a key press. Quit if the key is either ESC or 'q'.
