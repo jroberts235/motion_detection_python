@@ -16,15 +16,22 @@ class Controller:
     def test(self):
         n = 0
         while n < 3:
-            self.board.digital[13].write(1)
-            print('ON')
-            sleep(1)
-            self.board.digital[13].write(0)
-            print('OFF')
-            n+= 1
+        #    self.board.digital[13].write(1)
+        #    print('ON')
+        #    sleep(1)
+        #    self.board.digital[13].write(0)
+        #    print('OFF')
+            for i in range(4,8):
+                print('Pin {}'.format(i))
+                self.board.digital[i].write(1)
+                print('ON')
+                sleep(1)
+                self.board.digital[i].write(0)
+                print('OFF')
+            n += 1
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     board = sys.argv[1]
     c=Controller(board)
     c.test()
